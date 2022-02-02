@@ -130,6 +130,7 @@ void
     ASSERT(NumberOfParameters == 0);
 
     LOG("%7s", "TID|");
+    LOG("%8s", "ParentID|");
     LOG("%20s", "Name|");
     LOG("%5s", "Prio|");
     LOG("%8s", "State|");
@@ -137,6 +138,7 @@ void
     LOG("%10s", "Prt ticks|");
     LOG("%10s", "Ttl ticks|");
     LOG("%10s", "Process|");
+
     LOG("\n");
     LOG("Total number of threads: %d \n",GetTotalNumberOfThreads());
     status = ThreadExecuteForEachThreadEntry(_CmdThreadPrint, NULL );
@@ -686,6 +688,7 @@ STATUS
     pThread = CONTAINING_RECORD(ListEntry, THREAD, AllList );
 
     LOG("%6x%c", pThread->Id, '|');
+    LOG("%6x%c", pThread->ParentId, '|');
     LOG("%19s%c", pThread->Name, '|');
     LOG("%4U%c", pThread->Priority, '|');
     LOG("%7s%c", _CmdThreadStateToName(pThread->State), '|');

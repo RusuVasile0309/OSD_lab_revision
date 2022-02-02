@@ -10,7 +10,7 @@
 #include "gdtmu.h"
 #include "pe_exports.h"
 
-#define TID_INCREMENT               10
+#define TID_INCREMENT               3
 
 #define THREAD_TIME_SLICE           1
 
@@ -50,8 +50,8 @@ _ThreadSystemGetNextTid(
     )
 {
     static volatile TID __currentTid = 0;
-
-    return _InterlockedExchangeAdd64(&__currentTid, TID_INCREMENT);
+    TID nextTid = _InterlockedExchangeAdd64(&__currentTid, TID_INCREMENT);
+    return (nextTid+1);
 }
 
 static
@@ -749,7 +749,7 @@ _ThreadInit(
     pThread = NULL;
     nameLen = strlen(Name);
     pStack = NULL;
-
+     
     __try
     {
         pThread = ExAllocatePoolWithTag(PoolAllocateZeroMemory, sizeof(THREAD), HEAP_THREAD_TAG, 0);
@@ -805,6 +805,9 @@ _ThreadInit(
         pThread->Id = _ThreadSystemGetNextTid();
         pThread->State = ThreadStateBlocked;
         pThread->Priority = Priority;
+        pThread->ParentId =GetCurrentThread() ? GetCurrentThread()->Id : 0;
+
+        LOG("Created thread %x with name %s\n", pThread->Id, pThread->Name);
 
         LockInit(&pThread->BlockLock);
 
@@ -812,8 +815,6 @@ _ThreadInit(
         InsertTailList(&m_threadSystemData.AllThreadsList, &pThread->AllList);
         m_threadSystemData.TotalNumberOfThreads++;
         LockRelease(&m_threadSystemData.AllThreadsLock, oldIntrState);
-        
-        LOG("Created thread %x with name %s\n",pThread->Id,pThread->Name);
     }
     __finally
     {
