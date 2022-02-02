@@ -138,7 +138,7 @@ void
     LOG("%10s", "Ttl ticks|");
     LOG("%10s", "Process|");
     LOG("\n");
-
+    LOG("Total number of threads: %d \n",GetTotalNumberOfThreads());
     status = ThreadExecuteForEachThreadEntry(_CmdThreadPrint, NULL );
     ASSERT( SUCCEEDED(status));
 }

@@ -119,3 +119,6 @@ THREAD_PRIORITY
 ThreadGetPriority(
     IN_OPT  PTHREAD             Thread
     );
+
+UINT32
+GetTotalNumberOfThreads();

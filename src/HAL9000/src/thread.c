@@ -10,7 +10,7 @@
 #include "gdtmu.h"
 #include "pe_exports.h"
 
-#define TID_INCREMENT               4
+#define TID_INCREMENT               10
 
 #define THREAD_TIME_SLICE           1
 
@@ -36,6 +36,8 @@ typedef struct _THREAD_SYSTEM_DATA
 
     _Guarded_by_(ReadyThreadsLock)
     LIST_ENTRY          ReadyThreadsList;
+
+    UINT32 TotalNumberOfThreads;
 } THREAD_SYSTEM_DATA, *PTHREAD_SYSTEM_DATA;
 
 static THREAD_SYSTEM_DATA m_threadSystemData;
@@ -139,7 +141,8 @@ ThreadSystemPreinit(
     )
 {
     memzero(&m_threadSystemData, sizeof(THREAD_SYSTEM_DATA));
-
+     
+    m_threadSystemData.TotalNumberOfThreads = 0;
     InitializeListHead(&m_threadSystemData.AllThreadsList);
     LockInit(&m_threadSystemData.AllThreadsLock);
 
@@ -655,6 +658,13 @@ ThreadGetPriority(
     return (NULL != pThread) ? pThread->Priority : 0;
 }
 
+UINT32 GetTotalNumberOfThreads()
+{
+    _Benign_race_begin_
+    return m_threadSystemData.TotalNumberOfThreads;
+    _Benign_race_end_
+}
+
 void
 ThreadSetPriority(
     IN      THREAD_PRIORITY     NewPriority
@@ -800,6 +810,7 @@ _ThreadInit(
 
         LockAcquire(&m_threadSystemData.AllThreadsLock, &oldIntrState);
         InsertTailList(&m_threadSystemData.AllThreadsList, &pThread->AllList);
+        m_threadSystemData.TotalNumberOfThreads++;
         LockRelease(&m_threadSystemData.AllThreadsLock, oldIntrState);
         
         LOG("Created thread %x with name %s\n",pThread->Id,pThread->Name);
