@@ -72,11 +72,13 @@ goto end
 
 :config_LAPTOP-T17F69JK
 
+SET VOL_MOUNT_LETTER="Q:"
 SET PATH_TO_VM_DISK="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\VM\HAL9000_VM\HAL9000.vmdk"
-SET PXE_PATH="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\PXE"
+SET PATH_TO_VM_FILE="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\VM\HAL9000_VM\HAL9000.vmx"
 SET PATH_TO_LOG_FILE="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\VM\HAL9000_VM\HAL9000.log"
 SET PATH_TO_VIX_TOOLS="C:\Program Files (x86)\VMware\VMware Workstation"
-SET PATH_TO_VM_FILE="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\VM\HAL9000_VM\HAL9000.vmx"
+SET PXE_PATH="D:\Faculta\An4\Semestru1\OSD\HAL9000folder\HAL9000\PXE"
+SET PATH_TO_VM_TOOLS="C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit"
 goto end
 
 :end
