@@ -8,6 +8,7 @@
 #include "process_internal.h"
 #include "dmp_cpu.h"
 #include "thread_internal.h"
+#include "vmm.h"
 
 extern void SyscallEntry();
 
@@ -76,6 +77,9 @@ SyscallHandler(
             break;
         case SyscallIdFileWrite:
             status = SyscallFileWrite((UM_HANDLE)pSyscallParameters[0], (PVOID)pSyscallParameters[1], (QWORD)pSyscallParameters[2], (QWORD*)pSyscallParameters[3]);
+            break;
+        case SyscallIdVirtualAlloc:
+            status = SyscallVirtualAlloc((PVOID)pSyscallParameters[0], pSyscallParameters[1], (VMM_ALLOC_TYPE)pSyscallParameters[2], (PAGE_RIGHTS)pSyscallParameters[3], (UM_HANDLE)pSyscallParameters[4], pSyscallParameters[5], (PVOID*)pSyscallParameters[6]);
             break;
         // STUDENT TODO: implement the rest of the syscalls
         default:
@@ -225,4 +229,25 @@ STATUS
     }
      return STATUS_SUCCESS;
     }
+
+STATUS
+SyscallVirtualAlloc(
+    IN_OPT      PVOID                   BaseAddress,
+    IN          QWORD                   Size,
+    IN          VMM_ALLOC_TYPE          AllocType,
+    IN          PAGE_RIGHTS             PageRights,
+    IN_OPT      UM_HANDLE               FileHandle,
+    IN_OPT      QWORD                   Key,
+    OUT         PVOID* AllocatedAddress
+)
+{
+    if (Key != 0)
+        return STATUS_UNSUPPORTED;
+    if (FileHandle != 0)
+        return STATUS_UNSUPPORTED;
+    PPROCESS process = GetCurrentProcess();
+    LOG("%s\n", process->ProcessName);
+    *AllocatedAddress = VmmAllocRegionEx(BaseAddress, Size, AllocType, PageRights, FALSE, NULL, process->VaSpace, process->PagingData, NULL);
+    return STATUS_SUCCESS;
+}
 // STUDENT TODO: implement the rest of the syscalls
