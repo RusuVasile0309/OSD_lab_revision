@@ -7,6 +7,7 @@
 #include "mmu.h"
 #include "process_internal.h"
 #include "dmp_cpu.h"
+#include "thread_internal.h"
 
 extern void SyscallEntry();
 
@@ -66,6 +67,15 @@ SyscallHandler(
         {
         case SyscallIdIdentifyVersion:
             status = SyscallValidateInterface((SYSCALL_IF_VERSION)*pSyscallParameters);
+            break;
+        case SyscallIdThreadExit:
+            status = SyscallThreadExit((STATUS)pSyscallParameters[0]);
+            break;
+        case SyscallIdProcessExit:
+            status = SyscallProcessExit((STATUS)pSyscallParameters[0]);
+            break;
+        case SyscallIdFileWrite:
+            status = SyscallFileWrite((UM_HANDLE)pSyscallParameters[0], (PVOID)pSyscallParameters[1], (QWORD)pSyscallParameters[2], (QWORD*)pSyscallParameters[3]);
             break;
         // STUDENT TODO: implement the rest of the syscalls
         default:
@@ -169,4 +179,50 @@ SyscallValidateInterface(
     return STATUS_SUCCESS;
 }
 
+STATUS
+SyscallThreadExit(
+    IN      STATUS                  ExitStatus
+     )
+     {
+    ThreadExit(ExitStatus);
+    return STATUS_SUCCESS;
+    }
+
+STATUS
+ SyscallProcessExit(
+    IN      STATUS                  ExitStatus
+     )
+     {
+    UNREFERENCED_PARAMETER(ExitStatus);
+    ProcessTerminate(NULL);
+    return STATUS_SUCCESS;
+    }
+
+STATUS
+ SyscallFileWrite(
+    IN  UM_HANDLE                   FileHandle,
+    IN_READS_BYTES(BytesToWrite)
+     PVOID                       Buffer,
+    IN  QWORD                       BytesToWrite,
+    OUT QWORD * BytesWritten
+     )
+     {
+    STATUS status;
+    status = MmuIsBufferValid(BytesWritten, sizeof(QWORD), PAGE_RIGHTS_WRITE, GetCurrentProcess());
+    if (!SUCCEEDED(status))
+         return STATUS_INVALID_BUFFER;
+    status = MmuIsBufferValid(Buffer, BytesToWrite, PAGE_RIGHTS_READ, GetCurrentProcess());
+    if (!SUCCEEDED(status))
+         return STATUS_INVALID_BUFFER;
+    switch (FileHandle) {
+    case UM_FILE_HANDLE_STDOUT:
+        LOG("%s", Buffer);
+        *BytesWritten = BytesToWrite;
+        break;
+    default:
+        return STATUS_UNSUCCESSFUL;
+        
+    }
+     return STATUS_SUCCESS;
+    }
 // STUDENT TODO: implement the rest of the syscalls

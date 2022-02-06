@@ -10,7 +10,7 @@
 #include "gdtmu.h"
 #include "pe_exports.h"
 
-#define TID_INCREMENT               10
+#define TID_INCREMENT               1
 
 #define THREAD_TIME_SLICE           1
 
@@ -49,9 +49,10 @@ _ThreadSystemGetNextTid(
     void
     )
 {
+    static volatile TID __N = 0;
     static volatile TID __currentTid = 0;
-
-    return _InterlockedExchangeAdd64(&__currentTid, TID_INCREMENT);
+    return _InterlockedExchangeAdd64(&__currentTid, 3 * _InterlockedExchangeAdd64(&__N, TID_INCREMENT) + TID_INCREMENT);
+    
 }
 
 static
@@ -965,7 +966,7 @@ _ThreadSetupMainThreadUserStack(
     ASSERT(ResultingStack != NULL);
     ASSERT(Process != NULL);
 
-    *ResultingStack = InitialStack;
+    *ResultingStack = (PVOID)PtrDiff(InitialStack, SHADOW_STACK_SIZE + sizeof(PVOID));
 
     return STATUS_SUCCESS;
 }
